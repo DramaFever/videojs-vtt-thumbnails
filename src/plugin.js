@@ -165,6 +165,14 @@ class vttThumbnailsPlugin {
     this.progressBar = this.player.$('.vjs-progress-control')
     const thumbHolder = document.createElement('div')
     thumbHolder.setAttribute('class', 'vjs-vtt-thumbnail-display')
+    thumbHolder.setAttribute('style', 'opacity: 0;')
+    this.time = document.createElement('div')
+    this.time.className = 'vjs-thumbnail-time'
+    thumbHolder.appendChild(this.time)
+    this.time.innerHTML = this.player.currentTime();
+    const arrow = document.createElement('div');
+    arrow.className = 'vjs-thumbnail-arrow';
+    thumbHolder.appendChild(arrow)
     this.progressBar.appendChild(thumbHolder)
     this.thumbnailHolder = thumbHolder
     if(mouseDisplay) {
@@ -229,6 +237,9 @@ class vttThumbnailsPlugin {
       return this.hideThumbnailHolder()
     }
 
+    // set time
+    this.time.innerHTML = player.controlBar.progressControl.seekBar.mouseTimeDisplay.el_.dataset.currentTime;
+
     const xPos = ((1 - ((width - x) / width))) * width
 
     this.thumbnailHolder.style.transform = 'translateX(' + xPos + 'px)'
@@ -267,6 +278,7 @@ class vttThumbnailsPlugin {
 
       }
     })
+    window.console.log(['processedVtts', processedVtts])
     return processedVtts
   }
 
