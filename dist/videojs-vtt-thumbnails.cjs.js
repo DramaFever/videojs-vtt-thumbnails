@@ -247,6 +247,9 @@ var vttThumbnailsPlugin = function () {
     if (!this.options.src) {
       return;
     }
+    if (this.options.imagesPerRow) {
+      this.options.imagePercentage = 100 / (this.options.imagesPerRow - 1);
+    }
     var baseUrl = this.getBaseUrl();
     var url = this.getFullyQualifiedUrl(this.options.src, baseUrl);
     this.getVttFile(url).then(function (data) {
@@ -311,6 +314,9 @@ var vttThumbnailsPlugin = function () {
     this.time.innerHTML = this.player.currentTime();
     var arrow = document.createElement('div');
     arrow.className = 'vjs-thumbnail-arrow';
+    if (this.options.width) {
+      arrow.setAttribute('style', 'margin-left: ' + (this.options.width / 2 - 5) + 'px');
+    }
     thumbHolder.appendChild(arrow);
     this.progressBar.appendChild(thumbHolder);
     this.thumbnailHolder = thumbHolder;
@@ -382,7 +388,7 @@ var vttThumbnailsPlugin = function () {
     }
 
     // set time
-    this.time.innerHTML = player.controlBar.progressControl.seekBar.mouseTimeDisplay.el_.dataset.currentTime;
+    this.time.innerHTML = this.player.controlBar.progressControl.seekBar.mouseTimeDisplay.el_.innerText;
 
     var xPos = (1 - (width - x) / width) * width;
 
@@ -423,7 +429,7 @@ var vttThumbnailsPlugin = function () {
         });
       }
     });
-    window.console.log(['processedVtts', processedVtts]);
+
     return processedVtts;
   };
 
@@ -481,9 +487,20 @@ var vttThumbnailsPlugin = function () {
     }
 
     var imageProps = this.getPropsFromDef(vttImageDef);
-    cssObj.background = 'url("' + imageProps.image + '") no-repeat -' + imageProps.x + 'px -' + imageProps.y + 'px';
-    cssObj.width = imageProps.w + 'px';
-    cssObj.height = imageProps.h + 'px';
+
+    // if you need to scale the image because different width/height specified
+    if (this.options.width && this.options.height) {
+      var imageNumber = 10 * (parseInt(imageProps.x) / (parseInt(imageProps.w) * this.options.imagesPerRow));
+      cssObj.background = 'url("' + imageProps.image + '") no-repeat';
+      cssObj.width = this.options.width + 'px';
+      cssObj.height = this.options.height + 'px';
+      cssObj.backgroundSize = this.options.imagesPerRow * 100 + '%';
+      cssObj.backgroundPosition = imageNumber * this.options.imagePercentage + '% 0';
+    } else {
+      cssObj.background = 'url("' + imageProps.image + '") no-repeat -' + imageProps.x + 'px -' + imageProps.y + 'px';
+      cssObj.width = imageProps.w + 'px';
+      cssObj.height = imageProps.h + 'px';
+    }
 
     return cssObj;
   };
