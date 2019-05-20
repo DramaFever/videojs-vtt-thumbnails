@@ -111,6 +111,9 @@ class vttThumbnailsPlugin {
     if (!this.options.src) {
       return
     }
+    if (this.options.imagesPerRow) {
+      this.options.imagePercentage = 100 / (this.options.imagesPerRow - 1)
+    }
     const baseUrl = this.getBaseUrl()
     const url = this.getFullyQualifiedUrl(this.options.src, baseUrl)
     this.getVttFile(url)
@@ -165,6 +168,17 @@ class vttThumbnailsPlugin {
     this.progressBar = this.player.$('.vjs-progress-control')
     const thumbHolder = document.createElement('div')
     thumbHolder.setAttribute('class', 'vjs-vtt-thumbnail-display')
+    thumbHolder.setAttribute('style', 'opacity: 0;')
+    this.time = document.createElement('div')
+    this.time.className = 'vjs-thumbnail-time'
+    thumbHolder.appendChild(this.time)
+    this.time.innerHTML = this.player.currentTime();
+    const arrow = document.createElement('div');
+    arrow.className = 'vjs-thumbnail-arrow';
+    if (this.options.width) {
+      arrow.setAttribute('style', 'margin-left: ' + ((this.options.width / 2) - 5) + 'px')
+    }
+    thumbHolder.appendChild(arrow)
     this.progressBar.appendChild(thumbHolder)
     this.thumbnailHolder = thumbHolder
     if(mouseDisplay) {
@@ -229,6 +243,9 @@ class vttThumbnailsPlugin {
       return this.hideThumbnailHolder()
     }
 
+    // set time
+    this.time.innerHTML = this.player.controlBar.progressControl.seekBar.mouseTimeDisplay.el_.innerText;
+
     const xPos = ((1 - ((width - x) / width))) * width
 
     this.thumbnailHolder.style.transform = 'translateX(' + xPos + 'px)'
@@ -267,6 +284,7 @@ class vttThumbnailsPlugin {
 
       }
     })
+
     return processedVtts
   }
 
@@ -330,9 +348,20 @@ class vttThumbnailsPlugin {
     }
 
     const imageProps = this.getPropsFromDef(vttImageDef)
-    cssObj.background = 'url("' + imageProps.image + '") no-repeat -' + imageProps.x + 'px -' + imageProps.y + 'px'
-    cssObj.width = imageProps.w + 'px'
-    cssObj.height = imageProps.h + 'px'
+
+    // if you need to scale the image because different width/height specified
+    if (this.options.width && this.options.height) {
+      let imageNumber = 10 * (parseInt(imageProps.x) / (parseInt(imageProps.w) * this.options.imagesPerRow))
+      cssObj.background = 'url("' + imageProps.image + '") no-repeat'
+      cssObj.width = this.options.width + 'px'
+      cssObj.height = this.options.height + 'px'
+      cssObj.backgroundSize = (this.options.imagesPerRow * 100) + '%'
+      cssObj.backgroundPosition = (imageNumber * this.options.imagePercentage) + '% 0'
+    } else {
+      cssObj.background = 'url("' + imageProps.image + '") no-repeat -' + imageProps.x + 'px -' + imageProps.y + 'px'
+      cssObj.width = imageProps.w + 'px'
+      cssObj.height = imageProps.h + 'px'
+    }
 
     return cssObj
   }
