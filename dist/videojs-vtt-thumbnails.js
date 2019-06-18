@@ -412,7 +412,8 @@ var vttThumbnailsPlugin = function () {
 
     var xPos = (1 - (width - x) / width) * width;
 
-    this.thumbnailHolder.style.transform = 'translateX(' + xPos + 'px)';
+    this.thumbnailHolder.style.position = 'absolute';
+    this.thumbnailHolder.style.left = xPos + 'px';
     this.thumbnailHolder.style.marginLeft = '-' + parseInt(currentStyle.width) / 2 + 'px';
 
     if (this.lastStyle && this.lastStyle === currentStyle) {
